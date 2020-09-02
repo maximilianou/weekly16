@@ -10,6 +10,35 @@ const filesIn = [
   { path: '../../../front_angular/Dockerfile.dev', mark: '\n```\n' },
   { path: '../../../api_express/Dockerfile.dev', mark: '\n```\n' },
   {
+    path: '../../../api_ts/lib/server.ts',
+    mark: '\n```\n',
+  },
+  {
+    path: '../../../api_ts/lib/environment.ts',
+    mark: '\n```\n',
+  },
+  {
+    path: '../../../api_ts/lib/config/app.ts',
+    mark: '\n```\n',
+  },
+  {
+    path: '../../../api_ts/lib/routes/routes_test.ts',
+    mark: '\n```\n',
+  },
+  {
+    path: '../../../api_ts/lib/assets/hello.yaml',
+    mark: '\n```\n',
+  },
+  {
+    path: '../../../api_ts/lib/routes/helloRoutes.ts',
+    mark: '\n```\n',
+  },
+  {
+    path: '../../../api_ts/package.json',
+    mark: '\n```\n',
+  },
+
+  {
     path: '../../../front_angular/package.json',
     mark: '\n```\n',
   },
@@ -108,34 +137,6 @@ const filesIn = [
   },
   {
     path: '../../../front_angular/src/app/auth/login/login.component.html',
-    mark: '\n```\n',
-  },
-  {
-    path: '../../../api_ts/lib/server.ts',
-    mark: '\n```\n',
-  },
-  {
-    path: '../../../api_ts/lib/environment.ts',
-    mark: '\n```\n',
-  },
-  {
-    path: '../../../api_ts/lib/config/app.ts',
-    mark: '\n```\n',
-  },
-  {
-    path: '../../../api_ts/lib/routes/routes_test.ts',
-    mark: '\n```\n',
-  },
-  {
-    path: '../../../api_ts/lib/assets/hello.yaml',
-    mark: '\n```\n',
-  },
-  {
-    path: '../../../api_ts/lib/routes/helloRoutes.ts',
-    mark: '\n```\n',
-  },
-  {
-    path: '../../../api_ts/package.json',
     mark: '\n```\n',
   },
 ];

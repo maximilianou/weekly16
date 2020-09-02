@@ -22,7 +22,6 @@ class App {
         this.app.use( bodyParser.urlencoded({ extended: false}) );
        
         const spec: string = path.join( __dirname, '../assets/hello.yaml');
-        console.log(spec);
 
         await new OpenApiValidator({ 
             apiSpec:  spec,

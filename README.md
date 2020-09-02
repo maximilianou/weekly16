@@ -1,3 +1,65 @@
+### ../../../Makefile 
+```
+ng3:
+	docker-compose -f docker-compose.dev.yml up --build
+ng4:
+	docker-compose -f docker-compose.dev.yml down	
+ng5: 
+	docker system prune -a # delete all docker images in your computer
+
+start: ng3
+
+stop: ng4
+
+doc:
+	cd share/docs/src/ && node cmd.js
+
+install: ng1
+ng1:
+	nvm install 14
+	nvm use 14
+	npm install -g npm@latest
+	npm install -g @angular/cli
+	ng new front_angular
+ng2: 
+	cd front_angular && ng serve
+ng6:
+	mkdir api_express
+	cd api_express && npm init -y
+	cd api_express && npm install nodemon --save-dev
+	cd api_express && npm install bcryptjs body-parser cors express jsonwebtoken mongoose validator --save	
+ng8:
+	#cd front_angular && ng generate module app-routing --flat --module=app
+	cd front_angular && ng generate component home
+	cd front_angular && ng generate component header
+	cd front_angular && ng generate component profile
+	cd front_angular && ng generate component auth
+	cd front_angular && ng generate module auth
+	cd front_angular && ng generate service auth/auth
+	cd front_angular && ng generate guard auth/auth
+	cd front_angular && ng generate component auth/register
+	cd front_angular && ng generate component auth/login
+	cd front_angular && npm install bootstrap --save
+	cd front_angular && npm install @auth0/angular-jwt --save
+	cd front_angular && npm install moment --save
+
+ng9:
+	#cd front_angular && npm install angular-in-memory-web-api --save
+	#cd front_angular && ng generate service InMemoryData
+	#cd front_angular && ng generate component dish-search
+
+test_ts_ok:
+	curl http://localhost:6016/api_ts/hello?greeting=max
+test_ts_error:
+	curl http://localhost:6016/api_ts/hello
+test_angular:
+	curl http://localhost:4216/
+
+```
+### ../../../DO.md 
+# weekly16
+typescript, openapi
+
 ### ../../../docker-compose.dev.yml 
 ```
 version: "3.8" # specify docker-compose version
@@ -69,64 +131,6 @@ services:
 
 
 ```
-### ../../../Makefile 
-```
-ng3:
-	docker-compose -f docker-compose.dev.yml up --build
-ng4:
-	docker-compose -f docker-compose.dev.yml down	
-ng5: 
-	docker system prune -a # delete all docker images in your computer
-
-start: ng3
-
-stop: ng4
-
-doc:
-	cd share/docs/src/ && node cmd.js
-
-install: ng1
-ng1:
-	nvm install 14
-	nvm use 14
-	npm install -g npm@latest
-	npm install -g @angular/cli
-	ng new front_angular
-ng2: 
-	cd front_angular && ng serve
-ng6:
-	mkdir api_express
-	cd api_express && npm init -y
-	cd api_express && npm install nodemon --save-dev
-	cd api_express && npm install bcryptjs body-parser cors express jsonwebtoken mongoose validator --save	
-ng8:
-	#cd front_angular && ng generate module app-routing --flat --module=app
-	cd front_angular && ng generate component home
-	cd front_angular && ng generate component header
-	cd front_angular && ng generate component profile
-	cd front_angular && ng generate component auth
-	cd front_angular && ng generate module auth
-	cd front_angular && ng generate service auth/auth
-	cd front_angular && ng generate guard auth/auth
-	cd front_angular && ng generate component auth/register
-	cd front_angular && ng generate component auth/login
-	cd front_angular && npm install bootstrap --save
-	cd front_angular && npm install @auth0/angular-jwt --save
-	cd front_angular && npm install moment --save
-
-ng9:
-	#cd front_angular && npm install angular-in-memory-web-api --save
-	#cd front_angular && ng generate service InMemoryData
-	#cd front_angular && ng generate component dish-search
-
-test_ts_ok:
-	curl http://localhost:6016/api_ts/hello?greeting=max
-test_ts_error:
-	curl http://localhost:6016/api_ts/hello
-test_angular:
-	curl http://localhost:4216/
-
-```
 ### ../../../front_angular/Dockerfile.dev 
 ```
 # Create image based off of the official 12.8-alpine
@@ -144,10 +148,6 @@ EXPOSE 4200 49153
 CMD ["npm", "start"]
 
 ```
-### ../../../DO.md 
-# weekly16
-typescript, openapi
-
 ### ../../../api_express/Dockerfile.dev 
 ```
 # Create image based off of the official 12.8-alpine
@@ -165,6 +165,246 @@ COPY . .
 EXPOSE 5000
 # Serve the app
 CMD [ "npm", "run", "dev-server" ]
+
+```
+### ../../../api_ts/lib/server.ts 
+```
+import app from './config/app';
+import env from './environment';
+
+const PORT = env.getPort();
+
+app.listen(PORT, () => {
+    console.log(`Express server Typescript!!; listening: ${PORT}`);
+});
+```
+### ../../../api_ts/lib/environment.ts 
+```
+enum Environments {
+    local_environment = 'local',
+    dev_environment = 'dev',
+    prod_environment = 'prod',
+    qa_environment = 'qa'
+}
+
+class Environment {
+    private environment: string;
+    constructor(environment:string){
+        this.environment = environment;
+    }
+    getPort() : Number {
+        if( this.environment === Environments.prod_environment){
+            return 8081;
+        }else if( this.environment === Environments.dev_environment){
+            return 8082;
+        }else if( this.environment === Environments.qa_environment){
+            return 8083;
+        }else{
+            return 3000;
+        }
+    }
+    getDBName() : string {
+        if( this.environment === Environments.prod_environment){
+            return 'db_test_ts_prod';
+        }else if( this.environment === Environments.dev_environment){
+            return 'db_test_ts_dev';
+        }else if( this.environment === Environments.qa_environment){
+            return 'db_test_ts_qa';
+        }else{
+            return 'db_test_ts_local';
+        }
+
+    }
+}
+
+export default new Environment(Environments.local_environment);
+```
+### ../../../api_ts/lib/config/app.ts 
+```
+import * as express from 'express';
+import * as path from 'path';
+import * as bodyParser from 'body-parser';
+import { RoutesTest } from '../routes/routes_test';
+import { HelloRoutes } from '../routes/helloRoutes';
+import { OpenApiValidator } from 'express-openapi-validator';
+
+
+class App {
+    public app: express.Application;
+    private routes_test: RoutesTest = new RoutesTest();
+    private helloRoutes: HelloRoutes = new HelloRoutes();
+    constructor(){
+        this.app = express();
+        this.config().then( () => {
+            this.routes_test.route(this.app);
+            this.helloRoutes.route(this.app);
+        });
+    }
+    private async config(){
+        this.app.use( bodyParser.json() );
+        this.app.use( bodyParser.urlencoded({ extended: false}) );
+       
+        const spec: string = path.join( __dirname, '../assets/hello.yaml');
+
+        await new OpenApiValidator({ 
+            apiSpec:  spec,
+            validateRequests: true,
+            validateResponses: true
+        }).install(this.app);
+    }
+}
+export default new App().app;
+```
+### ../../../api_ts/lib/routes/routes_test.ts 
+```
+// lib/routes/routes.test.ts
+import { Application, Request, Response} from 'express';
+
+export class RoutesTest{
+    public route(app: Application){
+        app.get('/api_ts/test', (req: Request, res: Response) => {
+            res.status(200).json({message: 'Get request successfull'});
+        });
+        app.post('/api_ts/test', (req: Request, res: Response) => {
+            res.status(200).json({message: 'Post request successfull'});
+        });
+
+    }
+}
+```
+### ../../../api_ts/lib/assets/hello.yaml 
+```
+openapi: 3.0.0
+info:
+ title: Hello World API
+ description: This is our Hello World API.
+ version: '1.0'
+paths:
+ /hello:
+   post:
+     x-swagger-router-controller: helloWorldRoute
+     operationId: helloWorldPost
+     tags:
+       - /hello
+     description: >-
+       Returns Hello world message.
+     parameters:
+       - name: greeting
+         in: query
+         description: Name of greeting
+         required: true
+         schema:
+           type: string
+     responses:
+       '200':
+         description: Successful request.
+         content:
+           application/json:
+             schema:
+               $ref: '#/components/schemas/Hello'
+       default:
+         description: Invalid request.
+         content:
+           application/json:
+             schema:
+               $ref: '#/components/schemas/Error'
+   get:
+     x-swagger-router-controller: helloWorldRoute
+     operationId: helloWorldGet
+     tags:
+       - /hello
+     description: >-
+       Returns Hello world message
+     parameters:
+       - name: greeting
+         in: query
+         description: Name of greeting
+         required: true
+         schema:
+           type: string
+     responses:
+       '200':
+         description: Successful request.
+         content:
+           application/json:
+             schema:
+               $ref: '#/components/schemas/Hello'
+       default:
+         description: Invalid request.
+         content:
+           application/json:
+             schema:
+               $ref: '#/components/schemas/Error'
+servers:
+ - url: '/api_ts'
+components:
+ schemas:
+   Hello:
+     properties:
+       msg:
+         type: string
+     required:
+       - msg
+   Error:
+     properties:
+       message:
+         type: string
+     required:
+       - message
+```
+### ../../../api_ts/lib/routes/helloRoutes.ts 
+```
+// lib/routes/helloRoutes.ts
+import { Application, Request, Response} from 'express';
+
+export class HelloRoutes{
+    public route(app: Application){
+        app.get('/api_ts/hello', (req: Request, res: Response) => {
+            res.status(200).json({msg: 'Get hello request successfull'});
+        });
+        app.post('/api_ts/hello', (req: Request, res: Response) => {
+            res.status(200).json({msg: 'Post hello request successfull'});
+        });
+
+    }
+}
+```
+### ../../../api_ts/package.json 
+```
+{
+  "name": "api_ts",
+  "version": "1.0.0",
+  "description": "Reference:",
+  "main": "./dist/server.js",
+  "scripts": {
+    "clean": "rm -rf ./dist",
+    "assets": "mkdir -p ./dist/assets && cp -r ./lib/assets/* ./dist/assets/",
+    "tsc": "npm run clean && ./node_modules/.bin/tsc",
+    "test": "ts-node ./lib/server.ts",
+    "dev": "tsc && npm run assets && nodemon ./dist/server.js",
+    "prod": "tsc && npm run assets && nodemon ./dist/server.js"
+
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@types/config-yaml": "^1.1.1",
+    "@types/express": "^4.17.8",
+    "@types/js-yaml": "^3.12.5",
+    "body-parser": "^1.19.0",
+    "express": "^4.17.1",
+    "express-openapi-validator": "^3.16.11",
+    "mongoose": "^5.10.2",
+    "nodemon": "^2.0.4",
+    "ts-node": "^9.0.0",
+    "typescript": "^4.0.2"
+  },
+  "directories": {
+    "lib": "lib"
+  },
+  "devDependencies": {}
+}
 
 ```
 ### ../../../front_angular/package.json 
@@ -1167,245 +1407,4 @@ export class LoginComponent implements OnInit {
         </div>
     </div>
 </div>
-```
-### ../../../api_ts/lib/server.ts 
-```
-import app from './config/app';
-import env from './environment';
-
-const PORT = env.getPort();
-
-app.listen(PORT, () => {
-    console.log(`Express server Typescript!!; listening: ${PORT}`);
-});
-```
-### ../../../api_ts/lib/environment.ts 
-```
-enum Environments {
-    local_environment = 'local',
-    dev_environment = 'dev',
-    prod_environment = 'prod',
-    qa_environment = 'qa'
-}
-
-class Environment {
-    private environment: string;
-    constructor(environment:string){
-        this.environment = environment;
-    }
-    getPort() : Number {
-        if( this.environment === Environments.prod_environment){
-            return 8081;
-        }else if( this.environment === Environments.dev_environment){
-            return 8082;
-        }else if( this.environment === Environments.qa_environment){
-            return 8083;
-        }else{
-            return 3000;
-        }
-    }
-    getDBName() : string {
-        if( this.environment === Environments.prod_environment){
-            return 'db_test_ts_prod';
-        }else if( this.environment === Environments.dev_environment){
-            return 'db_test_ts_dev';
-        }else if( this.environment === Environments.qa_environment){
-            return 'db_test_ts_qa';
-        }else{
-            return 'db_test_ts_local';
-        }
-
-    }
-}
-
-export default new Environment(Environments.local_environment);
-```
-### ../../../api_ts/lib/config/app.ts 
-```
-import * as express from 'express';
-import * as path from 'path';
-import * as bodyParser from 'body-parser';
-import { RoutesTest } from '../routes/routes_test';
-import { HelloRoutes } from '../routes/helloRoutes';
-import { OpenApiValidator } from 'express-openapi-validator';
-
-
-class App {
-    public app: express.Application;
-    private routes_test: RoutesTest = new RoutesTest();
-    private helloRoutes: HelloRoutes = new HelloRoutes();
-    constructor(){
-        this.app = express();
-        this.config().then( () => {
-            this.routes_test.route(this.app);
-            this.helloRoutes.route(this.app);
-        });
-    }
-    private async config(){
-        this.app.use( bodyParser.json() );
-        this.app.use( bodyParser.urlencoded({ extended: false}) );
-       
-        const spec: string = path.join( __dirname, '../assets/hello.yaml');
-        console.log(spec);
-
-        await new OpenApiValidator({ 
-            apiSpec:  spec,
-            validateRequests: true,
-            validateResponses: true
-        }).install(this.app);
-    }
-}
-export default new App().app;
-```
-### ../../../api_ts/lib/routes/routes_test.ts 
-```
-// lib/routes/routes.test.ts
-import { Application, Request, Response} from 'express';
-
-export class RoutesTest{
-    public route(app: Application){
-        app.get('/api_ts/test', (req: Request, res: Response) => {
-            res.status(200).json({message: 'Get request successfull'});
-        });
-        app.post('/api_ts/test', (req: Request, res: Response) => {
-            res.status(200).json({message: 'Post request successfull'});
-        });
-
-    }
-}
-```
-### ../../../api_ts/lib/assets/hello.yaml 
-```
-openapi: 3.0.0
-info:
- title: Hello World API
- description: This is our Hello World API.
- version: '1.0'
-paths:
- /hello:
-   post:
-     x-swagger-router-controller: helloWorldRoute
-     operationId: helloWorldPost
-     tags:
-       - /hello
-     description: >-
-       Returns Hello world message.
-     parameters:
-       - name: greeting
-         in: query
-         description: Name of greeting
-         required: true
-         schema:
-           type: string
-     responses:
-       '200':
-         description: Successful request.
-         content:
-           application/json:
-             schema:
-               $ref: '#/components/schemas/Hello'
-       default:
-         description: Invalid request.
-         content:
-           application/json:
-             schema:
-               $ref: '#/components/schemas/Error'
-   get:
-     x-swagger-router-controller: helloWorldRoute
-     operationId: helloWorldGet
-     tags:
-       - /hello
-     description: >-
-       Returns Hello world message
-     parameters:
-       - name: greeting
-         in: query
-         description: Name of greeting
-         required: true
-         schema:
-           type: string
-     responses:
-       '200':
-         description: Successful request.
-         content:
-           application/json:
-             schema:
-               $ref: '#/components/schemas/Hello'
-       default:
-         description: Invalid request.
-         content:
-           application/json:
-             schema:
-               $ref: '#/components/schemas/Error'
-servers:
- - url: '/api_ts'
-components:
- schemas:
-   Hello:
-     properties:
-       msg:
-         type: string
-     required:
-       - msg
-   Error:
-     properties:
-       message:
-         type: string
-     required:
-       - message
-```
-### ../../../api_ts/lib/routes/helloRoutes.ts 
-```
-// lib/routes/helloRoutes.ts
-import { Application, Request, Response} from 'express';
-
-export class HelloRoutes{
-    public route(app: Application){
-        app.get('/api_ts/hello', (req: Request, res: Response) => {
-            res.status(200).json({msg: 'Get hello request successfull'});
-        });
-        app.post('/api_ts/hello', (req: Request, res: Response) => {
-            res.status(200).json({msg: 'Post hello request successfull'});
-        });
-
-    }
-}
-```
-### ../../../api_ts/package.json 
-```
-{
-  "name": "api_ts",
-  "version": "1.0.0",
-  "description": "Reference:",
-  "main": "./dist/server.js",
-  "scripts": {
-    "clean": "rm -rf ./dist",
-    "assets": "mkdir -p ./dist/assets && cp -r ./lib/assets/* ./dist/assets/",
-    "tsc": "npm run clean && ./node_modules/.bin/tsc",
-    "test": "ts-node ./lib/server.ts",
-    "dev": "tsc && npm run assets && nodemon ./dist/server.js",
-    "prod": "tsc && npm run assets && nodemon ./dist/server.js"
-
-  },
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
-  "dependencies": {
-    "@types/config-yaml": "^1.1.1",
-    "@types/express": "^4.17.8",
-    "@types/js-yaml": "^3.12.5",
-    "body-parser": "^1.19.0",
-    "express": "^4.17.1",
-    "express-openapi-validator": "^3.16.11",
-    "mongoose": "^5.10.2",
-    "nodemon": "^2.0.4",
-    "ts-node": "^9.0.0",
-    "typescript": "^4.0.2"
-  },
-  "directories": {
-    "lib": "lib"
-  },
-  "devDependencies": {}
-}
-
 ```
