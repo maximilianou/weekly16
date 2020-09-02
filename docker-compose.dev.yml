@@ -1,0 +1,67 @@
+version: "3.8" # specify docker-compose version
+
+# Define the services/containers to be run
+services:
+  cook16_angular: # name of the first service
+    build: # specify the directory of the Dockerfile
+      context: ./front_angular
+      dockerfile: Dockerfile.dev
+    container_name: cook16_angular
+    volumes:
+      - ./front_angular:/front_angular
+      - /front_angular/node_modules
+    ports:
+      - "4216:4200" # specify port forewarding
+      - "49153:49153"
+    environment:
+      - NODE_ENV=dev
+
+  cook16_express: #name of the second service
+    build: # specify the directory of the Dockerfile
+      context: ./api_express
+      dockerfile: Dockerfile.dev
+    container_name: cook16_express
+    volumes:
+      - ./api_express:/api_express
+      - /api_express/node_modules
+    ports:
+      - "5016:5000" #specify ports forewarding
+    environment:
+      - PORT=5000
+    links:
+      - cook16_database
+
+  cook16_ts:
+    build:
+      context: ./api_ts
+      dockerfile: Dockerfile.dev
+    container_name: cook16_ts
+    volumes:
+      - ./api_ts:/api_ts
+      - /api_ts/node_modules
+    ports:
+      - "6016:3000"
+
+
+  cook16_database:
+    image: postgres
+    restart: always
+    environment:
+      POSTGRES_PASSWORD: example
+
+  cook16_adminer:
+    image: adminer
+    restart: always
+    ports:
+      - 9016:8080
+
+  cook16_nginx: #name of the fourth service
+    build: loadbalancer # specify the directory of the Dockerfile
+    container_name: cook16_nginx
+    ports:
+      - "8016:80" #specify ports forewarding
+    links:
+      - cook16_express
+      - cook16_angular
+      - cook16_ts
+

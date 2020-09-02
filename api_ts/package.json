@@ -1,0 +1,34 @@
+{
+  "name": "api_ts",
+  "version": "1.0.0",
+  "description": "Reference:",
+  "main": "./dist/server.js",
+  "scripts": {
+    "clean": "rm -rf ./dist",
+    "assets": "mkdir -p ./dist/assets && cp -r ./lib/assets/* ./dist/assets/",
+    "tsc": "npm run clean && ./node_modules/.bin/tsc",
+    "test": "ts-node ./lib/server.ts",
+    "dev": "tsc && npm run assets && nodemon ./dist/server.js",
+    "prod": "tsc && npm run assets && nodemon ./dist/server.js"
+
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@types/config-yaml": "^1.1.1",
+    "@types/express": "^4.17.8",
+    "@types/js-yaml": "^3.12.5",
+    "body-parser": "^1.19.0",
+    "express": "^4.17.1",
+    "express-openapi-validator": "^3.16.11",
+    "mongoose": "^5.10.2",
+    "nodemon": "^2.0.4",
+    "ts-node": "^9.0.0",
+    "typescript": "^4.0.2"
+  },
+  "directories": {
+    "lib": "lib"
+  },
+  "devDependencies": {}
+}
