@@ -1,3 +1,7 @@
+### ../../../DO.md 
+# weekly16
+typescript, openapi
+
 ### ../../../Makefile 
 ```
 ng3:
@@ -52,14 +56,12 @@ test_ts_ok:
 	curl http://localhost:6016/api_ts/hello?greeting=max
 test_ts_error:
 	curl http://localhost:6016/api_ts/hello
+test_api:
+	curl http://localhost:6016/api-docs
 test_angular:
 	curl http://localhost:4216/
 
 ```
-### ../../../DO.md 
-# weekly16
-typescript, openapi
-
 ### ../../../docker-compose.dev.yml 
 ```
 version: "3.8" # specify docker-compose version
@@ -227,7 +229,8 @@ import * as bodyParser from 'body-parser';
 import { RoutesTest } from '../routes/routes_test';
 import { HelloRoutes } from '../routes/helloRoutes';
 import { OpenApiValidator } from 'express-openapi-validator';
-
+import * as swaggerUi from 'swagger-ui-express';
+import * as YAML from 'yamljs';
 
 class App {
     public app: express.Application;
@@ -243,9 +246,15 @@ class App {
     private async config(){
         this.app.use( bodyParser.json() );
         this.app.use( bodyParser.urlencoded({ extended: false}) );
-       
+
+        // openapi spec in .yaml
         const spec: string = path.join( __dirname, '../assets/hello.yaml');
 
+        // swagger-ui
+        const swaggerDocument = YAML.load( spec );
+        this.app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocument));
+
+        // validator
         await new OpenApiValidator({ 
             apiSpec:  spec,
             validateRequests: true,
@@ -271,86 +280,6 @@ export class RoutesTest{
 
     }
 }
-```
-### ../../../api_ts/lib/assets/hello.yaml 
-```
-openapi: 3.0.0
-info:
- title: Hello World API
- description: This is our Hello World API.
- version: '1.0'
-paths:
- /hello:
-   post:
-     x-swagger-router-controller: helloWorldRoute
-     operationId: helloWorldPost
-     tags:
-       - /hello
-     description: >-
-       Returns Hello world message.
-     parameters:
-       - name: greeting
-         in: query
-         description: Name of greeting
-         required: true
-         schema:
-           type: string
-     responses:
-       '200':
-         description: Successful request.
-         content:
-           application/json:
-             schema:
-               $ref: '#/components/schemas/Hello'
-       default:
-         description: Invalid request.
-         content:
-           application/json:
-             schema:
-               $ref: '#/components/schemas/Error'
-   get:
-     x-swagger-router-controller: helloWorldRoute
-     operationId: helloWorldGet
-     tags:
-       - /hello
-     description: >-
-       Returns Hello world message
-     parameters:
-       - name: greeting
-         in: query
-         description: Name of greeting
-         required: true
-         schema:
-           type: string
-     responses:
-       '200':
-         description: Successful request.
-         content:
-           application/json:
-             schema:
-               $ref: '#/components/schemas/Hello'
-       default:
-         description: Invalid request.
-         content:
-           application/json:
-             schema:
-               $ref: '#/components/schemas/Error'
-servers:
- - url: '/api_ts'
-components:
- schemas:
-   Hello:
-     properties:
-       msg:
-         type: string
-     required:
-       - msg
-   Error:
-     properties:
-       message:
-         type: string
-     required:
-       - message
 ```
 ### ../../../api_ts/lib/routes/helloRoutes.ts 
 ```
@@ -378,12 +307,11 @@ export class HelloRoutes{
   "main": "./dist/server.js",
   "scripts": {
     "clean": "rm -rf ./dist",
-    "assets": "mkdir -p ./dist/assets && cp -r ./lib/assets/* ./dist/assets/",
+    "assets": "mkdir -p ./dist/assets && cp -r ./lib/assets/* ./dist/assets/ && chmod 777 ./dist/assets/*",
     "tsc": "npm run clean && ./node_modules/.bin/tsc",
     "test": "ts-node ./lib/server.ts",
     "dev": "tsc && npm run assets && nodemon ./dist/server.js",
     "prod": "tsc && npm run assets && nodemon ./dist/server.js"
-
   },
   "keywords": [],
   "author": "",
@@ -392,13 +320,17 @@ export class HelloRoutes{
     "@types/config-yaml": "^1.1.1",
     "@types/express": "^4.17.8",
     "@types/js-yaml": "^3.12.5",
+    "@types/swagger-ui-express": "^4.1.2",
+    "@types/yamljs": "^0.2.31",
     "body-parser": "^1.19.0",
     "express": "^4.17.1",
     "express-openapi-validator": "^3.16.11",
     "mongoose": "^5.10.2",
     "nodemon": "^2.0.4",
+    "swagger-ui-express": "^4.1.4",
     "ts-node": "^9.0.0",
-    "typescript": "^4.0.2"
+    "typescript": "^4.0.2",
+    "yamljs": "^0.3.0"
   },
   "directories": {
     "lib": "lib"
@@ -1407,4 +1339,84 @@ export class LoginComponent implements OnInit {
         </div>
     </div>
 </div>
+```
+### ../../../api_ts/lib/assets/hello.yaml 
+```
+openapi: 3.0.0
+info:
+ title: Hello World API
+ description: This is our Hello World API.
+ version: '1.0'
+paths:
+ /hello:
+   post:
+     x-swagger-router-controller: helloWorldRoute
+     operationId: helloWorldPost
+     tags:
+       - /hello
+     description: >-
+       Returns Hello world message.
+     parameters:
+       - name: greeting
+         in: query
+         description: Name of greeting
+         required: true
+         schema:
+           type: string
+     responses:
+       '200':
+         description: Successful request.
+         content:
+           application/json:
+             schema:
+               $ref: '#/components/schemas/Hello'
+       default:
+         description: Invalid request.
+         content:
+           application/json:
+             schema:
+               $ref: '#/components/schemas/Error'
+   get:
+     x-swagger-router-controller: helloWorldRoute
+     operationId: helloWorldGet
+     tags:
+       - /hello
+     description: >-
+       Returns Hello world message
+     parameters:
+       - name: greeting
+         in: query
+         description: Name of greeting
+         required: true
+         schema:
+           type: string
+     responses:
+       '200':
+         description: Successful request.
+         content:
+           application/json:
+             schema:
+               $ref: '#/components/schemas/Hello'
+       default:
+         description: Invalid request.
+         content:
+           application/json:
+             schema:
+               $ref: '#/components/schemas/Error'
+servers:
+ - url: '/api_ts'
+components:
+ schemas:
+   Hello:
+     properties:
+       msg:
+         type: string
+     required:
+       - msg
+   Error:
+     properties:
+       message:
+         type: string
+     required:
+       - message
 ```
