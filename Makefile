@@ -50,5 +50,7 @@ test_ts_ok:
 	curl http://localhost:6016/api_ts/hello?greeting=max
 test_ts_error:
 	curl http://localhost:6016/api_ts/hello
+test_api:
+	curl http://localhost:6016/api-docs
 test_angular:
 	curl http://localhost:4216/

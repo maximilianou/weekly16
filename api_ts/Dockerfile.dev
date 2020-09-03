@@ -1,7 +1,9 @@
 # Create image based off of the official 12.8-alpine
 FROM node:14-alpine
+
 # disabling ssl for npm for Dev or if you are behind proxy
 RUN npm set strict-ssl false
+
 # Change directory so that our commands run inside this new directory
 WORKDIR /api_ts
 # Copy dependency definitions

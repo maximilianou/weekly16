@@ -4,7 +4,8 @@ import * as bodyParser from 'body-parser';
 import { RoutesTest } from '../routes/routes_test';
 import { HelloRoutes } from '../routes/helloRoutes';
 import { OpenApiValidator } from 'express-openapi-validator';
-
+import * as swaggerUi from 'swagger-ui-express';
+import * as YAML from 'yamljs';
 
 class App {
     public app: express.Application;
@@ -20,9 +21,15 @@ class App {
     private async config(){
         this.app.use( bodyParser.json() );
         this.app.use( bodyParser.urlencoded({ extended: false}) );
-       
+
+        // openapi spec in .yaml
         const spec: string = path.join( __dirname, '../assets/hello.yaml');
 
+        // swagger-ui
+        const swaggerDocument = YAML.load( spec );
+        this.app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocument));
+
+        // validator
         await new OpenApiValidator({ 
             apiSpec:  spec,
             validateRequests: true,
