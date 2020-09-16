@@ -51,6 +51,6 @@ test_ts_ok:
 test_ts_error:
 	curl http://localhost:6016/api_ts/hello
 test_api:
-	curl http://localhost:6016/api-docs
+	curl http://localhost:6016/api_ts/api-docs
 test_angular:
 	curl http://localhost:4216/

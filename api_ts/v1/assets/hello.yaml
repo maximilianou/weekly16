@@ -1,7 +1,7 @@
 openapi: 3.0.0
 info:
  title: Hello World API
- description: This is our Hello World API.
+ description: This is our Hello World API. https://levelup.gitconnected.com/setup-restful-api-with-node-js-express-mongodb-using-typescript-261959ef0998
  version: '1.0'
 paths:
  /hello:

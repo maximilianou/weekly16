@@ -1,4 +1,4 @@
-// lib/routes/routes.test.ts
+// lib/routes/routesTest.ts
 import { Application, Request, Response} from 'express';
 
 export class RoutesTest{

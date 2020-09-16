@@ -5,11 +5,11 @@
   "main": "./dist/server.js",
   "scripts": {
     "clean": "rm -rf ./dist",
-    "assets": "mkdir -p ./dist/assets && cp -r ./lib/assets/* ./dist/assets/ && chmod 777 ./dist/assets/*",
-    "tsc": "npm run clean && ./node_modules/.bin/tsc",
+    "assets": "mkdir -p ./dist/assets && cp -r ./assets/* ./dist/assets/ && chmod 777 ./dist/assets/*",
+    "tsc": "npm run clean && ./node_modules/.bin/tsc && npm run assets",
     "test": "ts-node ./lib/server.ts",
-    "dev": "tsc && npm run assets && nodemon ./dist/server.js",
-    "prod": "tsc && npm run assets && nodemon ./dist/server.js"
+    "dev": "tsc && nodemon ./dist/server.js",
+    "prod": "tsc && nodemon ./dist/server.js"
   },
   "keywords": [],
   "author": "",
